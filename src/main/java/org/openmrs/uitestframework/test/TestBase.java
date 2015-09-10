@@ -7,11 +7,14 @@ import static org.openmrs.uitestframework.test.TestData.checkIfPatientExists;
 
 import java.io.StringReader;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.NotFoundException;
 
+import com.saucelabs.junit.ConcurrentParameterized;
+import com.saucelabs.junit.Parallelized;
 import org.apache.commons.lang3.StringUtils;
 import org.dbunit.IDatabaseTester;
 import org.dbunit.JdbcDatabaseTester;
@@ -27,8 +30,10 @@ import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.ext.mysql.MySqlDataTypeFactory;
 import org.dbunit.ext.mysql.MySqlMetadataHandler;
 import org.dbunit.operation.DatabaseOperation;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.runner.RunWith;
 import org.openmrs.uitestframework.page.GenericPage;
 import org.openmrs.uitestframework.page.LoginPage;
 import org.openmrs.uitestframework.page.Page;
@@ -59,13 +64,14 @@ import com.saucelabs.junit.SauceOnDemandTestWatcher;
  *  - @see {@link #assertPage(Page)}
  *  - @see {@link #pageContent()}
  */
+@RunWith(ConcurrentParameterized.class)
 public class TestBase implements SauceOnDemandSessionIdProvider {
 
 	/**
 	 * Constructs a {@link SauceOnDemandAuthentication} instance using the supplied user name/access key.  To use the authentication
 	 * supplied by environment variables or from an external file, use the no-arg {@link SauceOnDemandAuthentication} constructor.
 	 */
-	public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("tmd123", "dc12022f-a139-4759-9283-2b816cf10fa6");
+	public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("tmsaucelabs", "3547e04d-e4f7-4bf1-9e67-1366887f29ab");
 
 	/**
 	 * JUnit Rule which will mark the Sauce Job as passed/failed when the test succeeds or fails.
@@ -105,6 +111,19 @@ public class TestBase implements SauceOnDemandSessionIdProvider {
 
 	protected LoginPage loginPage;
 
+	/**
+	 * @return a LinkedList containing String arrays representing the browser combinations the test should be run against. The values
+	 * in the String array are used as part of the invocation of the test constructor
+	 */
+	@ConcurrentParameterized.Parameters
+	public static LinkedList browsersStrings() {
+		LinkedList browsers = new LinkedList();
+
+		browsers.add(new String[]{"Windows 8.1", "43.0", "chrome", null, null});
+		return browsers;
+	}
+
+
 	@Before
 	public void startWebDriver() throws Exception {
 		DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -124,6 +143,11 @@ public class TestBase implements SauceOnDemandSessionIdProvider {
 		loginPage = new LoginPage(driver);
 
 		goToLoginPage();
+	}
+
+	@After
+	public void stopWebDriver() {
+		driver.quit();
 	}
 
 	public void login() {
