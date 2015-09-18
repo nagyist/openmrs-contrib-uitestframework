@@ -118,11 +118,15 @@ public class TestBase implements SauceOnDemandSessionIdProvider {
 	@ConcurrentParameterized.Parameters
 	public static LinkedList browsersStrings() {
 		LinkedList browsers = new LinkedList();
-
-		browsers.add(new String[]{"Windows 8.1", "43.0", "chrome", null, null});
+			browsers.add(new String[]{"Windows 8.1", "43.0", "chrome", null, null});
 		return browsers;
 	}
 
+	public TestBase(String os, String version, String browser, String deviceName, String deviceOrientation) {
+		this.os = os;
+		this.version = version;
+		this.browser = browser;
+	}
 
 	@Before
 	public void startWebDriver() throws Exception {
